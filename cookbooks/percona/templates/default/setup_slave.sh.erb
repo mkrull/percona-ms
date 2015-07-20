@@ -1,0 +1,14 @@
+#!/bin/bash
+
+chown mysql.mysql -R /var/lib/mysql
+mv /var/lib/mysql/backup-my.cnf /etc/mysql/my.cnf
+echo server-id=2 >> /etc/mysql/my.cnf
+/etc/init.d/mysql start
+
+master_log=$(cut -f1 /var/lib/mysql/xtrabackup_binlog_pos_innodb)
+master_log_pos=$(cut -f2 /var/lib/mysql/xtrabackup_binlog_pos_innodb)
+
+mysql -e "change master to master_host='<%= @master %>', master_user='<%= @user %>', master_password='<%= @pass %>', master_log_file='$master_log', master_log_pos=$master_log_pos;"
+mysql -e "start slave;"
+
+exit
